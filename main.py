@@ -108,9 +108,10 @@ def handleData(self, data):
 
     awards = getAwards(names, data['awards'], False)
     
-    os.mkdir('C:\\temp')
+    if not os.path.isdir('C:/temp'):
+        os.mkdir('C:/temp')
 
-    outputPath = 'C:\\temp\\final.docx'
+    outputPath = 'C:/temp/final.docx'
     writeAwards(awards, 'input.docx', outputPath)
 
     print('Done! :)')
