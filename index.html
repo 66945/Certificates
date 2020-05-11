@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Local Web Sever</title>
+
+        <style>
+            body {
+                background-color: #cccccc;
+
+                font-family: Arial, Helvetica, sans-serif;
+                color: #777777;
+                text-align: center;
+                align-content: center;
+            }
+
+            h1 {
+                font-size: 300%;
+            }
+
+            hr {
+                background-color: #777777;
+
+                border: none;
+
+                height: 5px;
+                width: 75%;
+            }
+
+            input {
+                display: none;
+            }
+
+            button {
+                padding: 30px;
+
+                border: none;
+                
+                background-color: #777777;
+                border: solid white 2px;
+                color: white;
+
+                font-size: 150%;
+            }
+
+            button:hover {
+                background-color: #999999;
+            }
+
+            table {
+                border: 2px solid #777777;
+                margin-left: auto; 
+                margin-right: auto;
+
+                margin-top: 25px;
+                margin-bottom: 25px;
+            }
+
+            th {
+                border: 2px solid #777777;
+                background-color: #777777;
+                color: white;
+                font-size: 200%;
+            }
+
+            td {
+                border: 2px solid #777777;
+            }
+
+            #instructions {
+                max-width: 50%;
+                margin-left: auto; 
+                margin-right: auto;
+
+                margin-top: 50px;
+
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Certificate Creator</h1>
+        <hr>
+
+        <div class="btns">
+            <input id="namesFile" type="file" onchange="openFile(event, 'names')">
+            <input id="awardsFile" type="file" onchange="openFile(event, 'awards')">
+
+            <button id="names">Names CSV File</button>
+            <button id="awards">Award CSV File</button>
+
+            <br>
+
+            <button id="createBtn">Create Certificates</button>
+        </div>
+
+        <div>
+            <table id="namesTable"></table>
+            <table id="awardsTable"></table>
+        </div>
+
+        <u><a class="instructionsLink">Instructions</a></u>
+
+        <div id="instructions">
+            <p>To run this program, you need two spreadsheets. One should contain all the names of the students in the 8th grade, and the other should contain the awards from the google form.</p>
+            <p>The spreadsheets should have these formats:</p>
+
+            <table>
+                <tr>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Middle Name</th>
+                </tr>
+                <tr>
+                    <td>Last</td>
+                    <td>First</td>
+                    <td>Middle</td>
+                </tr>
+                <tr>
+                    <td>Last</td>
+                    <td>First</td>
+                    <td>Middle</td>
+                </tr>
+            </table>
+
+            <table>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Select Student</th>
+                    <th>L/F</th>
+                    <th>Please select the award you are nominating this student for</th>
+                </tr>
+                <tr>
+                    <td>1/1/1970 12:00</td>
+                    <td>Student Name</td>
+                    <td>Name Student</td>
+                    <td>Award</td>
+                </tr>
+                <tr>
+                    <td>1/1/1970 12:00</td>
+                    <td>Student Name</td>
+                    <td>Name Student</td>
+                    <td>Award</td>
+                </tr>
+            </table>
+
+            <p>(note: yes, you do need to have the headers in the document)</p>
+
+            <hr>
+
+            <p>For the program to work you need the spreadsheets to be in a CSV file format. To download a Google Sheets file as a CSV, first click ‘File’</p>
+
+            <img src="/images/filesheets.png">
+
+            <p>Next click ‘download’</p>
+
+            <img src="/images/downloadsheets.png">
+
+            <p>And finally, click ‘Comma Separated Values (.csv)’ and download the file.</p>
+
+            <hr>
+
+            <p>To convert an excel sheet to a CSV click ‘File’</p>
+
+            <img src="/images/fileexcel.png">
+
+            <p>‘Save as’</p>
+
+            <img src="/images/downloadexcel.png">
+
+            <p>And switch the file type to CSV.</p>
+
+            <img src="/images/filetypeexcel.png">
+
+            <hr>
+
+            <p>Now, on this website, click the ‘Names CSV File’ button.</p>
+            <p>In the file dialog, select the CSV file with all the 8th graders names. A table should appear showing the first four names. If you have selected the incorrect file, you can repeat this process and change your selection.</p>
+            <p>Do the same thing for the awards CSV file.</p>
+            <p>When both files have been selected, click ‘Create certificates’. Wait until the black window that opened when you started the program prints ‘Done :)’ (you may have to minimize the webpage to see this).</p>
+            <p>Open file explorer and navigate to This PC > Windows (C:) > temp and open the word document named final. Double check the document, and make sure to delete any extra page.</p>
+            <p>Print out the document, and you are done! 😊</p>
+
+            <u><a class="instructionsLink">Back to top</a></u>
+        </div>
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script>
+            let names = "";
+            let awards = "";
+
+            $("#names").click(function(){
+                $("#namesFile").click();
+            });
+
+            $("#awards").click(function(){
+                $("#awardsFile").click();
+            });
+
+            $("#createBtn").click(function() {
+                $.post("http://localhost:8000/",
+                    {
+                        names: names,
+                        awards: awards
+                    },
+                    function(data, status) {
+                        if (status !== "success") {
+                            alert("POST did not return successfully");
+                        }
+                    }
+                );
+            });
+
+            $(".instructionsLink").click(function(){
+                $("#instructions").toggle()
+            });
+
+            function openFile(event, sheet) {
+                let input = event.target;
+
+                let reader = new FileReader();
+                reader.onload = function() {
+                    let data = reader.result;
+
+                    if (sheet === "names") {
+                        names = data;
+                    } else if (sheet === "awards") {
+                        awards = data;
+                    }
+
+                    generateTable(data, sheet);
+                };
+                reader.readAsBinaryString(input.files[0]);
+            }
+
+            function generateTable(data, sheet) {
+                let tableData = "";
+                let lines = data.split("\n");
+
+                for (let i = 0; i < 5; i++) {
+                    tableData += "<tr>";
+                    
+                    let cells = lines[i].split(",");
+                    for (let j = 0; j < cells.length; j++) {
+                        if (i == 0) {
+                            tableData += "<th>" + cells[j] + "</th>";
+                        } else {
+                            tableData += "<td>" + cells[j] + "</td>";
+                        }
+                    }
+
+                    tableData += "</tr>";
+                }
+
+                $("#" + sheet + "Table").last().html(tableData);
+            }
+        </script>
+    </body>
+</html>

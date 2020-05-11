@@ -1,5 +1,9 @@
 import csv
 from docs import Document
+from httptest import HandleRequests
+import httptest
+
+import os
 
 """
 Gets every name from a csv file and loads it into a dictionary.
@@ -15,15 +19,22 @@ The dictionary structure is as follows:
 
 The empty array will later be filled with the awards that person has in getAwards()
 """
-def getNames(path):
+def getNames(string, isFile):
     names = {}
 
-    with open(path) as file:
-        csvreader = csv.reader(file)
+    #with open(path) as file:
+    csvreader = None
 
-        next(csvreader)
+    if isFile:
+        csvreader = csv.reader(open(string))
+    else:
+        lines = string.split('\n')
+        csvreader = csv.reader(lines)
 
-        for row in csvreader:
+    next(csvreader)
+
+    for row in csvreader:
+        if len(row) >= 2:
             name = row[1] + ' ' + row[0]
             names[name] = []
     
@@ -41,15 +52,22 @@ The dictionary structure is as follows:
 
 'Full Name' : ['list', 'of', 'awards']
 """
-def getAwards(names, path):
+def getAwards(names, string, isFile):
     awards = names
 
-    with open(path) as file:
-        csvreader = csv.reader(file)
+    #with open(path) as file:
+    csvreader = None
 
-        next(csvreader)
+    if isFile:
+        csvreader = csv.reader(open(string))
+    else:
+        lines = string.split('\n')
+        csvreader = csv.reader(lines)
 
-        for row in csvreader:
+    next(csvreader)
+
+    for row in csvreader:
+        if len(row) >= 4:
             name = row[1]
             award = row[3]
 
@@ -85,16 +103,35 @@ def writeAwards(awards, inPath, outPath):
     
     doc.close()
 
+def handleData(self, data):
+    names = getNames(data['names'], False)
+
+    awards = getAwards(names, data['awards'], False)
+    
+    os.mkdir('C:\\temp')
+
+    outputPath = 'C:\\temp\\final.docx'
+    writeAwards(awards, 'input.docx', outputPath)
+
+    print('Done! :)')
+
 def main():
+    print(os.getcwd())
+
+    handleRequests = HandleRequests
+    handleRequests.handleData = handleData
+    httptest.setupServer(httptest.PORT, handleRequests)
+
+"""
     namesPath = input('Enter the Names CSV filepath: ')
     if not namesPath.endswith('.csv'):
         namesPath += '.csv'
-    names = getNames(namesPath)
+    names = getNames(namesPath, True)
 
     awardsPath = input('Enter the Awards CSV filepath: ')
     if not awardsPath.endswith('.csv'):
         awardsPath += '.csv'
-    awards = getAwards(names, awardsPath)
+    awards = getAwards(names, awardsPath, True)
 
     outputPath = input('Enter the final Microsoft Word Document filename: ')
     if not outputPath.endswith('.docx'):
@@ -102,6 +139,7 @@ def main():
     writeAwards(awards, 'input.docx', outputPath)
 
     print('Done! :)')
+"""
 
 if __name__ == '__main__':
     main()
